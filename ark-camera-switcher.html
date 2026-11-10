@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ark of God Camera Switcher</title>
+<style>
+/* Layout: control-room screen. Big program picture on the left with take buttons and controls under it, camera list on the right. Dark on purpose so the screen does not glare in a dim hall. */
+:root{
+  --bg:#0B0E1F; --panel:#151A33; --panel2:#1E2447; --line:#2C3262; --fg:#ECEEF8; --muted:#A3ABCB;
+  --accent:#9094FF; --accent-fg:#0B0E1F; --gold:#E3B34D; --live:#FF5249; --ok:#5FD093;
+  --font:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;padding:18px 16px 60px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+h1{font-size:1.45rem;margin:0}
+h2{font-size:1rem;margin:0}
+.eyebrow{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.muted{color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage{position:relative;background:#000;border-radius:8px;overflow:hidden;aspect-ratio:16/9;width:100%}
+.stage canvas{width:100%;height:100%;display:block}
+.tally{position:absolute;top:10px;left:10px;display:flex;gap:8px;align-items:center;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.tag{background:rgba(11,14,31,.82);padding:4px 9px;border-radius:5px}
+.tag.rec{color:var(--live)}
+.take{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:640px){.take{grid-template-columns:repeat(2,minmax(0,1fr))}}
+button,select,input[type=text]{font:inherit;color:var(--fg)}
+button{cursor:pointer}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-weight:600}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.rec{background:var(--live);color:#1a0300;border-color:var(--live)}
+.btn:disabled{opacity:.45;cursor:default}
+.takebtn{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:10px 12px;min-height:58px;overflow:hidden}
+.takebtn small{font-weight:500;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.takebtn kbd{font-family:inherit;font-size:.72rem;color:var(--gold);font-weight:700}
+.takebtn.onair{background:var(--live);border-color:var(--live);color:#1a0300}
+.takebtn.onair small,.takebtn.onair kbd{color:#1a0300}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:5px;font-size:.8rem;font-weight:600;color:var(--muted);min-width:0}
+input[type=text],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.check{flex-direction:row;align-items:center;gap:8px;color:var(--fg);font-weight:500;font-size:.9rem}
+.check input{accent-color:var(--accent);width:auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.meter{height:8px;background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--ok)}
+.tile{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--panel2)}
+.tile.onair{border-color:var(--live)}
+.thumb{position:relative;aspect-ratio:16/9;background:#000;border-radius:6px;overflow:hidden;cursor:pointer}
+.thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem}
+.thumb .pgm{position:absolute;top:6px;left:6px;background:var(--live);color:#1a0300;font-size:.68rem;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:4px;display:none}
+.tile.onair .pgm{display:block}
+.tile.running .off{display:none}
+.trow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.num{background:var(--bg);border:1px solid var(--line);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.msg{margin:0;font-size:.82rem;min-height:1.1em;color:var(--muted)}
+.msg.err{color:var(--live)}
+#gmsg{min-height:1.3em}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+summary{cursor:pointer;padding:12px 14px;font-weight:700}
+details .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+details ol,details ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <span class="eyebrow">Ark of God Deliverance Ministry</span>
+      <h1>Camera Switcher</h1>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="allow" type="button">Allow cameras and microphone</button>
+      <button class="btn" id="refresh" type="button">Refresh devices</button>
+    </div>
+  </header>
+  <p id="gmsg" class="msg" role="status"></p>
+
+  <main class="layout">
+    <section class="panel" aria-label="Program">
+      <div class="stage">
+        <canvas id="prog" width="1280" height="720"></canvas>
+        <div class="tally"><span class="tag" id="onair">No camera on air</span><span class="tag rec" id="rectag" hidden></span></div>
+      </div>
+      <div class="take" id="take"></div>
+
+      <div class="controls">
+        <label>Switch style
+          <select id="trans"><option value="0">Cut (instant)</option><option value="400" selected>Fade (smooth)</option></select>
+        </label>
+        <label>Microphone for recording
+          <select id="micsel"></select>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:6px;justify-content:flex-end">
+          <div class="row"><button class="btn" id="micbtn" type="button">Turn microphone on</button></div>
+          <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label>Caption line 1 (name or verse)
+          <input type="text" id="cap" placeholder="Example: Pastor John Adeyemi">
+        </label>
+        <label>Caption line 2
+          <input type="text" id="cap2" placeholder="Example: Sunday Deliverance Service">
+        </label>
+        <div style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end">
+          <label class="check"><input type="checkbox" id="showcap"> Show caption on screen</label>
+          <label class="check"><input type="checkbox" id="wm" checked> Show ministry name</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn rec" id="recbtn" type="button">Start recording</button>
+        <button class="btn" id="pop" type="button">Open clean output window</button>
+        <button class="btn" id="full" type="button">Full screen</button>
+        <span id="recout" class="row"></span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Cameras">
+      <h2>Cameras</h2>
+      <p class="muted" style="margin:0;font-size:.85rem">Choose a device for each camera, then press Start. Click a picture or press keys 1 to 5 to put that camera on air.</p>
+      <div id="cams" style="display:flex;flex-direction:column;gap:12px"></div>
+    </aside>
+  </main>
+
+  <details>
+    <summary>How to use this to go live</summary>
+    <div class="body">
+      <ol>
+        <li>Press <strong>Allow cameras and microphone</strong>, then <strong>Start</strong> on each camera you have connected.</li>
+        <li>Press <strong>Open clean output window</strong>. A second window opens showing only the on-air picture, with no buttons. Do not minimise it.</li>
+        <li>In OBS Studio, add a <strong>Window Capture</strong> source and choose the window called "Ark of God Output". Add your microphone in OBS as well, because the output window is silent.</li>
+        <li>Press <strong>Start Streaming</strong> in OBS to send it to Facebook, YouTube or TikTok. You can switch cameras from this page while streaming.</li>
+        <li>No OBS? Some platforms and video-call tools let you share a window or screen. Share the output window the same way.</li>
+      </ol>
+    </div>
+  </details>
+  <details>
+    <summary>Tips and limits</summary>
+    <div class="body">
+      <ul>
+        <li>Use Chrome or Edge on a computer. Keep this page and the output window visible, not minimised, or the picture can freeze.</li>
+        <li>Two or three USB cameras usually work. For more, use a powered USB hub or spread them across different ports. A camera can only be used by one app at a time, so close Zoom, OBS camera sources and other tabs first.</li>
+        <li>Recording keeps the video in the computer's memory until you press stop. For a service longer than about 90 minutes, record in OBS instead. The saved file is .webm and plays in Chrome or VLC.</li>
+        <li>Press <strong>Full screen</strong> to see the on-air picture alone. Press Escape to leave.</li>
+        <li>Everything runs on your computer. No video is uploaded anywhere by this page.</li>
+      </ul>
+    </div>
+  </details>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $=function(id){return document.getElementById(id)};
+  var W=1280,H=720;
+  var store={
+    get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+    set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  };
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  var gmsg=$('gmsg');
+  function say(t,err){gmsg.textContent=t||'';gmsg.className='msg'+(err?' err':'')}
+  function errText(e){
+    switch(e&&e.name){
+      case 'NotAllowedError': case 'SecurityError': return 'Permission was blocked. Click the camera icon in the address bar, allow the camera and microphone, then try again.';
+      case 'NotFoundError': case 'OverconstrainedError': return 'That device was not found. Check the cable and press Refresh devices.';
+      case 'NotReadableError': case 'AbortError': return 'That device is busy. Close other apps or tabs using it (Zoom, OBS, another browser tab) and try again.';
+      default: return 'That device could not be started.';
+    }
+  }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    say('This browser cannot use cameras here. Open this file in Chrome or Edge on a computer.',true);
+  }
+
+  /* ---------- state ---------- */
+  var DEFAULT_NAMES=['Congregation','Pastor','Spare camera 3','Spare camera 4','Spare camera 5'];
+  var names=store.get('ark.sw.names',DEFAULT_NAMES.slice());
+  var cams=[], program=-1, prev=-1, fadeStart=0, fadeMs=400;
+  var devices={video:[],audio:[]};
+  var micStream=null, audioCtx=null, analyser=null, micData=null;
+
+  /* ---------- camera tiles ---------- */
+  var camBox=$('cams'), takeBox=$('take');
+  for(var i=0;i<5;i++){(function(i){
+    var tile=document.createElement('div'); tile.className='tile';
+    tile.innerHTML='<div class="thumb"><video muted playsinline autoplay></video><span class="off">Camera off</span><span class="pgm">ON AIR</span></div>'+
+      '<div class="trow"><span class="num">'+(i+1)+'</span><input type="text" class="nm" aria-label="Camera '+(i+1)+' name"><button class="btn st" type="button">Start</button></div>'+
+      '<select class="dev" aria-label="Camera '+(i+1)+' device"></select><p class="msg"></p>';
+    camBox.appendChild(tile);
+    var c={i:i,tile:tile,stream:null,video:tile.querySelector('video'),nm:tile.querySelector('.nm'),st:tile.querySelector('.st'),sel:tile.querySelector('.dev'),msg:tile.querySelector('.msg')};
+    c.nm.value=names[i]||DEFAULT_NAMES[i];
+    c.nm.addEventListener('input',function(){names[i]=c.nm.value;store.set('ark.sw.names',names);paintTake()});
+    c.st.addEventListener('click',function(){c.stream?stopCam(i):startCam(i)});
+    c.sel.addEventListener('change',function(){store.set('ark.sw.dev',cams.map(function(x){return x.sel.value}))});
+    tile.querySelector('.thumb').addEventListener('click',function(){take(i)});
+    cams.push(c);
+
+    var b=document.createElement('button'); b.type='button'; b.className='btn takebtn'; b.id='take-'+i; b.disabled=true;
+    b.addEventListener('click',function(){take(i)});
+    takeBox.appendChild(b);
+  })(i)}
+
+  function nameOf(i){return (cams[i].nm.value||DEFAULT_NAMES[i]).trim()||DEFAULT_NAMES[i]}
+  function paintTake(){
+    cams.forEach(function(c,i){
+      var b=$('take-'+i);
+      b.innerHTML='<kbd>Key '+(i+1)+'</kbd><span>'+esc(nameOf(i))+'</span><small>'+(c.stream?(i===program?'On air':'Ready'):'Camera off')+'</small>';
+      b.disabled=!c.stream;
+      b.className='btn takebtn'+(i===program?' onair':'');
+      c.tile.className='tile'+(c.stream?' running':'')+(i===program?' onair':'');
+      c.st.textContent=c.stream?'Stop':'Start';
+    });
+    $('onair').textContent=program>=0?'On air: '+nameOf(program):'No camera on air';
+  }
+
+  /* ---------- devices ---------- */
+  async function refreshDevices(){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices)return;
+    var list=await navigator.mediaDevices.enumerateDevices();
+    devices.video=list.filter(function(d){return d.kind==='videoinput'});
+    devices.audio=list.filter(function(d){return d.kind==='audioinput'});
+    var saved=store.get('ark.sw.dev',[]);
+    cams.forEach(function(c,i){
+      var keep=c.sel.value||saved[i]||'';
+      c.sel.innerHTML='<option value="">Choose a camera</option>'+devices.video.map(function(d,k){return '<option value="'+esc(d.deviceId)+'">'+esc(d.label||('Camera '+(k+1)))+'</option>'}).join('');
+      var ok=devices.video.some(function(d){return d.deviceId===keep});
+      c.sel.value=ok?keep:((!keep&&devices.video[i])?devices.video[i].deviceId:'');
+    });
+    var micKeep=$('micsel').value||store.get('ark.sw.mic','');
+    $('micsel').innerHTML=devices.audio.map(function(d,k){return '<option value="'+esc(d.deviceId)+'">'+esc(d.label||('Microphone '+(k+1)))+'</option>'}).join('')||'<option value="">No microphone found</option>';
+    if(devices.audio.some(function(d){return d.deviceId===micKeep}))$('micsel').value=micKeep;
+    if(!devices.video.length)say('No cameras found yet. Plug a camera in, press Allow, then Refresh devices.',true);
+  }
+  $('micsel').addEventListener('change',function(){store.set('ark.sw.mic',$('micsel').value)});
+  $('allow').addEventListener('click',async function(){
+    say('');
+    try{
+      var s;
+      try{s=await navigator.mediaDevices.getUserMedia({video:true,audio:true})}
+      catch(e1){s=await navigator.mediaDevices.getUserMedia({video:true})}
+      s.getTracks().forEach(function(t){t.stop()});
+      await refreshDevices();
+      if(devices.video.length)say('Allowed. Choose a device for each camera and press Start.');
+    }catch(e){say(errText(e),true)}
+  });
+  $('refresh').addEventListener('click',function(){say('');refreshDevices().catch(function(e){say(errText(e),true)})});
+  if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener){navigator.mediaDevices.addEventListener('devicechange',function(){refreshDevices().catch(function(){})})}
+
+  /* ---------- cameras on and off ---------- */
+  function setMsg(c,t,err){c.msg.textContent=t||'';c.msg.className='msg'+(err?' err':'')}
+  async function startCam(i){
+    var c=cams[i]; var id=c.sel.value;
+    if(!id){setMsg(c,'Choose a camera first.',true);return}
+    for(var k=0;k<cams.length;k++){if(k!==i&&cams[k].stream&&cams[k].sel.value===id){setMsg(c,'That device is already used by camera '+(k+1)+'.',true);return}}
+    setMsg(c,'Starting...');
+    try{
+      var s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:id},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});
+      c.stream=s; c.video.srcObject=s; try{await c.video.play()}catch(e){}
+      s.getVideoTracks()[0].addEventListener('ended',function(){if(c.stream===s){stopCam(i);setMsg(c,'The camera was disconnected.',true)}});
+      setMsg(c,'');
+      if(program<0)take(i); else paintTake();
+    }catch(e){setMsg(c,errText(e),true)}
+  }
+  function stopCam(i){
+    var c=cams[i];
+    if(c.stream){c.stream.getTracks().forEach(function(t){t.stop()})}
+    c.stream=null; c.video.srcObject=null; setMsg(c,'');
+    if(prev===i)prev=-1;
+    if(program===i){
+      program=-1; prev=-1;
+      for(var k=0;k<cams.length;k++){if(cams[k].stream){program=k;break}}
+    }
+    paintTake();
+  }
+  function take(i){
+    if(!cams[i].stream||i===program)return;
+    fadeMs=+$('trans').value||0;
+    prev=program; program=i; fadeStart=performance.now();
+    paintTake();
+  }
+  document.addEventListener('keydown',function(e){
+    var t=e.target&&e.target.tagName;
+    if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT'||e.ctrlKey||e.metaKey||e.altKey)return;
+    var n=parseInt(e.key,10);
+    if(n>=1&&n<=5)take(n-1);
+  });
+
+  /* ---------- program picture ---------- */
+  var cv=$('prog'), ctx=cv.getContext('2d');
+  function drawVideo(v,alpha){
+    if(!v||v.readyState<2||!v.videoWidth)return;
+    var sc=Math.max(W/v.videoWidth,H/v.videoHeight), dw=v.videoWidth*sc, dh=v.videoHeight*sc;
+    ctx.globalAlpha=alpha; ctx.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh); ctx.globalAlpha=1;
+  }
+  function overlays(){
+    if($('wm').checked){
+      ctx.save(); ctx.font='600 22px system-ui,sans-serif'; ctx.textAlign='right'; ctx.fillStyle='rgba(255,255,255,.78)';
+      ctx.shadowColor='rgba(0,0,0,.7)'; ctx.shadowBlur=6; ctx.fillText('ARK OF GOD DELIVERANCE MINISTRY',W-28,44); ctx.restore();
+    }
+    var l1=$('cap').value.trim(), l2=$('cap2').value.trim();
+    if($('showcap').checked&&(l1||l2)){
+      ctx.save();
+      var x=48, hgt=(l1&&l2)?96:64, y=H-48-hgt;
+      ctx.font='700 34px system-ui,sans-serif'; var w1=l1?ctx.measureText(l1).width:0;
+      ctx.font='500 22px system-ui,sans-serif'; var w2=l2?ctx.measureText(l2).width:0;
+      var bw=Math.min(Math.max(w1,w2)+56,W-96);
+      ctx.fillStyle='rgba(11,14,31,.9)'; ctx.fillRect(x,y,bw,hgt);
+      ctx.fillStyle='#E3B34D'; ctx.fillRect(x,y,8,hgt);
+      ctx.fillStyle='#FFFFFF'; ctx.textBaseline='middle';
+      if(l1){ctx.font='700 34px system-ui,sans-serif';ctx.fillText(l1,x+28,y+(l2?30:hgt/2),bw-44)}
+      if(l2){ctx.font='500 22px system-ui,sans-serif';ctx.fillStyle='#C9CEE8';ctx.fillText(l2,x+28,y+(l1?68:hgt/2),bw-44)}
+      ctx.restore();
+    }
+  }
+  function frame(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    if(program>=0){
+      var t=1;
+      if(prev>=0&&fadeMs>0){t=Math.min(1,(performance.now()-fadeStart)/fadeMs); if(t>=1)prev=-1}
+      else prev=-1;
+      if(prev>=0&&cams[prev]&&cams[prev].stream){drawVideo(cams[prev].video,1);drawVideo(cams[program].video,t)}
+      else drawVideo(cams[program].video,1);
+    }else{
+      ctx.fillStyle='#A3ABCB'; ctx.font='500 34px system-ui,sans-serif'; ctx.textAlign='center';
+      ctx.fillText('Start a camera to begin',W/2,H/2); ctx.textAlign='left';
+    }
+    overlays();
+  }
+  var loopOn=false;
+  function fallbackLoop(){if(loopOn)return;loopOn=true;setInterval(frame,33)}
+  (function startLoop(){
+    try{
+      var blob=new Blob(['setInterval(function(){postMessage(1)},33)'],{type:'text/javascript'});
+      var w=new Worker(URL.createObjectURL(blob));
+      w.onmessage=function(){loopOn=true;frame()};
+      w.onerror=function(){try{w.terminate()}catch(e){}fallbackLoop()};
+      setTimeout(function(){if(!loopOn)fallbackLoop()},600);
+    }catch(e){fallbackLoop()}
+  })();
+  frame(); paintTake();
+
+  /* ---------- microphone ---------- */
+  $('micbtn').addEventListener('click',async function(){
+    if(recorder){say('Stop recording before changing the microphone.',true);return}
+    if(micStream){
+      micStream.getTracks().forEach(function(t){t.stop()}); micStream=null;
+      if(audioCtx){try{audioCtx.close()}catch(e){}audioCtx=null;analyser=null}
+      $('micbtn').textContent='Turn microphone on'; $('meter').style.width='0'; return;
+    }
+    try{
+      var id=$('micsel').value;
+      micStream=await navigator.mediaDevices.getUserMedia({audio:{deviceId:id?{exact:id}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
+      var AC=window.AudioContext||window.webkitAudioContext;
+      audioCtx=new AC(); var src=audioCtx.createMediaStreamSource(micStream);
+      analyser=audioCtx.createAnalyser(); analyser.fftSize=512; micData=new Uint8Array(analyser.fftSize); src.connect(analyser);
+      $('micbtn').textContent='Turn microphone off'; say('');
+      refreshDevices().catch(function(){});
+    }catch(e){micStream=null;say(errText(e),true)}
+  });
+  (function meterLoop(){
+    if(analyser){
+      analyser.getByteTimeDomainData(micData);
+      var peak=0; for(var k=0;k<micData.length;k++){var v=Math.abs(micData[k]-128);if(v>peak)peak=v}
+      $('meter').style.width=Math.min(100,Math.round(peak/128*140))+'%';
+    }
+    requestAnimationFrame(meterLoop);
+  })();
+
+  /* ---------- clean output window and full screen ---------- */
+  var outStream=null;
+  try{outStream=cv.captureStream(30)}catch(e){}
+  $('pop').addEventListener('click',function(){
+    if(!outStream){say('This browser cannot make a clean output window. Use Full screen instead.',true);return}
+    try{
+      var w=window.open('','ark-output','width=1280,height=720');
+      if(!w){say('The pop-up was blocked. Allow pop-ups for this page and try again.',true);return}
+      w.document.title='Ark of God Output';
+      w.document.body.style.cssText='margin:0;background:#000;height:100vh;overflow:hidden';
+      w.document.body.innerHTML='<video autoplay muted playsinline style="width:100%;height:100%;object-fit:contain;background:#000"></video>';
+      var v=w.document.querySelector('video'); v.srcObject=outStream;
+      var p=v.play(); if(p&&p.catch)p.catch(function(){});
+      say('Output window opened. In OBS, add a Window Capture of "Ark of God Output".');
+    }catch(e){say('The output window could not be opened here. Use Full screen instead.',true)}
+  });
+  $('full').addEventListener('click',function(){
+    var el=document.querySelector('.stage');
+    try{var p=el.requestFullscreen&&el.requestFullscreen(); if(p&&p.catch)p.catch(function(){say('Full screen is not available here.',true)})}
+    catch(e){say('Full screen is not available here.',true)}
+  });
+
+  /* ---------- recording ---------- */
+  var recorder=null, chunks=[], recStart=0, recTimer=null, lastUrl=null;
+  function pad(n){return (n<10?'0':'')+n}
+  function clock(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return pad(h)+':'+pad(m)+':'+pad(s%60)}
+  function stamp(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes())}
+  $('recbtn').addEventListener('click',function(){
+    if(recorder){recorder.stop();return}
+    if(!window.MediaRecorder||!outStream){say('This browser cannot record. Use Chrome or Edge.',true);return}
+    if(program<0){say('Start a camera first, then record.',true);return}
+    var tracks=outStream.getVideoTracks().slice();
+    if(micStream)micStream.getAudioTracks().forEach(function(t){tracks.push(t)});
+    var mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].filter(function(m){return MediaRecorder.isTypeSupported(m)})[0];
+    try{recorder=new MediaRecorder(new MediaStream(tracks),mime?{mimeType:mime,videoBitsPerSecond:3000000}:{videoBitsPerSecond:3000000})}
+    catch(e){recorder=null;say('Recording could not be started in this browser.',true);return}
+    chunks=[];
+    if(lastUrl){URL.revokeObjectURL(lastUrl);lastUrl=null}
+    $('recout').innerHTML='';
+    recorder.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data)};
+    recorder.onstop=function(){
+      clearInterval(recTimer); $('rectag').hidden=true;
+      var blob=new Blob(chunks,{type:'video/webm'}); chunks=[]; recorder=null;
+      $('recbtn').textContent='Start recording';
+      lastUrl=URL.createObjectURL(blob);
+      var name='ark-service-'+stamp()+'.webm';
+      var a=document.createElement('a'); a.className='btn primary'; a.href=lastUrl; a.download=name;
+      a.textContent='Save recording ('+(blob.size/1048576).toFixed(0)+' MB)';
+      $('recout').appendChild(a); a.click();
+      say(micStream?'Recording finished.':'Recording finished. The microphone was off, so the file has no sound.');
+    };
+    recorder.start(1000); recStart=Date.now();
+    $('recbtn').textContent='Stop recording';
+    $('rectag').hidden=false; $('rectag').textContent='REC 00:00:00';
+    recTimer=setInterval(function(){$('rectag').textContent='REC '+clock(Date.now()-recStart)},500);
+    say(micStream?'':'The microphone is off. Turn it on before recording if you want sound.',!micStream);
+  });
+  window.addEventListener('beforeunload',function(e){if(recorder){e.preventDefault();e.returnValue=''}});
+
+  /* ---------- captions saved ---------- */
+  ['cap','cap2'].forEach(function(id){
+    var v=store.get('ark.sw.'+id,''); if(v)$(id).value=v;
+    $(id).addEventListener('input',function(){store.set('ark.sw.'+id,$(id).value)});
+  });
+
+  refreshDevices().catch(function(){});
+})();
+</script>
+</body>
+</html>

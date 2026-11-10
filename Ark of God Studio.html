@@ -1,0 +1,679 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ark of God Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow working column, phone first. Masthead, tab bar, then a single panel (Write posts / Go live / Plan) at a time. */
+:root{
+  --bg:#F2F4FA; --surface:#FFFFFF; --surface2:#E8ECF6; --fg:#12152B; --muted:#515C7C; --line:#D3DAEC;
+  --accent:#3B3FB8; --accent-fg:#FFFFFF; --gold:#8F6200; --live:#C8261F; --ok:#1E7A4A;
+  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1124; --surface:#171B35; --surface2:#20254A; --fg:#ECEEF8; --muted:#A3ABCB; --line:#2C3262;
+    --accent:#9094FF; --accent-fg:#0E1124; --gold:#E3B34D; --live:#FF6B63; --ok:#5FD093;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1124; --surface:#171B35; --surface2:#20254A; --fg:#ECEEF8; --muted:#A3ABCB; --line:#2C3262;
+  --accent:#9094FF; --accent-fg:#0E1124; --gold:#E3B34D; --live:#FF6B63; --ok:#5FD093;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body); font-size:15px; line-height:1.55;
+  padding-block:20px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;line-height:1.2}
+h1{font-size:1.9rem;font-weight:700}
+h2{font-size:1.25rem;font-weight:600}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.sub{color:var(--muted);max-width:60ch}
+.mast{display:flex;flex-direction:column;gap:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tab{font:inherit;font-weight:600;background:transparent;color:var(--muted);border:1px solid transparent;border-radius:8px;padding:8px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+.tab:not([aria-selected="true"]):hover{background:var(--surface2);color:var(--fg)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:5px;font-size:.82rem;font-weight:600;color:var(--muted)}
+input,select,textarea{font:inherit;font-weight:400;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:90px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;flex-direction:row;align-items:center;gap:7px;font-size:.88rem;font-weight:500;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip input{width:auto;accent-color:var(--accent)}
+.chip:has(input:checked){border-color:var(--accent);background:var(--surface2)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button.btn,a.btn{font:inherit;font-weight:600;font-size:.9rem;border-radius:8px;padding:9px 15px;cursor:pointer;text-decoration:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);display:inline-flex;align-items:center;gap:6px}
+button.btn:hover,a.btn:hover{background:var(--surface2)}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button.primary:hover{background:var(--accent);filter:brightness(1.1)}
+button.danger{color:var(--live)}
+button:disabled{opacity:.55;cursor:default}
+.note{font-size:.84rem;color:var(--muted)}
+.status{font-size:.88rem;min-height:1.3em}
+.status.err{color:var(--live)}
+.out{display:flex;flex-direction:column;gap:14px}
+.post-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.count{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.count.over{color:var(--live);font-weight:600}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--accent);font-weight:700}
+details[open] summary::after{content:"–"}
+details .body{padding:0 16px 16px;display:flex;flex-direction:column;gap:8px}
+details ol,details ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.check{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:.92rem;font-weight:500;color:var(--fg);cursor:pointer}
+.check input{width:auto;margin-top:4px;accent-color:var(--accent)}
+.check:has(input:checked) span{color:var(--muted);text-decoration:line-through}
+.timer{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.clock{font-family:var(--font-display);font-size:3.4rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.live-dot{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--live)}
+.live-dot::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--live)}
+.live-dot.idle{color:var(--muted)}
+.live-dot.idle::before{background:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 78px 34px;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;border:1px solid transparent}
+.seg.now{border-color:var(--accent);background:var(--surface2)}
+.seg.done input[type=text]{text-decoration:line-through;color:var(--muted)}
+.seg button{font:inherit;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:1.1rem}
+.bar{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;width:100%}
+.bar>i{display:block;height:100%;background:var(--accent);width:0}
+.plan-item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.plan-item:first-child{border-top:0}
+.date{font-family:var(--font-display);font-weight:600;min-width:64px;font-variant-numeric:tabular-nums}
+.badge{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--surface2);color:var(--muted)}
+.badge.ex{color:var(--gold)}
+.plan-text{white-space:pre-wrap;color:var(--muted);font-size:.88rem;margin-top:4px;overflow-wrap:anywhere}
+.small-btn{font:inherit;font-size:.8rem;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:7px;padding:5px 10px;cursor:pointer}
+.small-btn:hover{background:var(--surface2)}
+.scripture{white-space:pre-wrap;font-family:var(--font-display);font-size:1.08rem;line-height:1.75;overflow-wrap:anywhere}
+.foot{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <span class="eyebrow">Media desk</span>
+    <h1>Ark of God Deliverance Ministry</h1>
+    <p class="sub">Write posts for every platform, run your live service on time, and plan the week's content in one place.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-write" aria-selected="true" aria-controls="p-write">Write posts</button>
+    <button class="tab" role="tab" id="tab-bible" aria-selected="false" aria-controls="p-bible">Bible</button>
+    <button class="tab" role="tab" id="tab-live" aria-selected="false" aria-controls="p-live">Go live</button>
+    <button class="tab" role="tab" id="tab-plan" aria-selected="false" aria-controls="p-plan">Plan</button>
+  </nav>
+
+  <!-- WRITE -->
+  <section class="panel" id="p-write" role="tabpanel" aria-labelledby="tab-write">
+    <div class="card">
+      <h2>What do you want to post?</h2>
+      <div class="grid2">
+        <label>Type of post
+          <select id="w-type">
+            <option value="scripture">Word for today</option>
+            <option value="prayer">Prayer points</option>
+            <option value="invite">Service invitation</option>
+            <option value="live">Going live now</option>
+            <option value="testimony">Testimony call</option>
+            <option value="sermon">Sermon clip caption</option>
+            <option value="custom">My own message</option>
+          </select>
+        </label>
+        <label>Tone
+          <select id="w-tone">
+            <option>Warm and gentle</option>
+            <option>Bold and faith-filled</option>
+            <option>Reverent and calm</option>
+          </select>
+        </label>
+      </div>
+      <label>Message or topic
+        <textarea id="w-topic" placeholder="Example: Freedom from fear. Let the peace of Christ rule in your heart today."></textarea>
+      </label>
+      <div class="grid2">
+        <label>Scripture reference (optional)
+          <input id="w-ref" type="text" placeholder="Example: Psalm 91:1-4">
+        </label>
+        <label>Date, time and place (optional)
+          <input id="w-when" type="text" placeholder="Example: Friday 6pm, church auditorium">
+        </label>
+      </div>
+      <div>
+        <p class="note" style="margin-bottom:8px">Platforms</p>
+        <div class="chips" id="w-plats"></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="w-ai" type="button">Write with Claude</button>
+        <button class="btn" id="w-tpl" type="button">Use quick template</button>
+      </div>
+      <p class="status" id="w-status" role="status"></p>
+    </div>
+    <div class="out" id="w-out"></div>
+  </section>
+
+  <!-- BIBLE -->
+  <section class="panel" id="p-bible" role="tabpanel" aria-labelledby="tab-bible" hidden>
+    <div class="card">
+      <h2>Open the Scriptures</h2>
+      <p class="note">Choose a book and chapter, or tap a verse the ministry often teaches from.</p>
+      <div class="chips" id="b-quick"></div>
+      <div class="grid2">
+        <label>Book <select id="b-book"></select></label>
+        <label>Chapter <select id="b-chap"></select></label>
+      </div>
+      <div class="grid2">
+        <label>Verses (optional) <input id="b-verses" type="text" placeholder="Example: 1-6"></label>
+        <label>Full chapter online in
+          <select id="b-ver">
+            <option>KJV</option><option>NKJV</option><option>NIV</option><option>ESV</option><option>NLT</option><option>AMP</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="b-read" type="button">Read here (KJV)</button>
+        <a class="btn" id="b-open" href="https://www.biblegateway.com" target="_blank" rel="noopener">Open full chapter online</a>
+        <button class="small-btn" id="b-use" type="button">Use in a post</button>
+      </div>
+      <p class="status" id="b-status" role="status"></p>
+    </div>
+    <div class="card" id="b-card" hidden>
+      <div class="post-head"><h3 id="b-ref"></h3><span class="badge">King James Version</span></div>
+      <div class="scripture" id="b-text"></div>
+      <div class="row"><button class="btn" id="b-copy" type="button">Copy passage</button></div>
+      <p class="note">Claude writes this text out from memory. Compare it with your own Bible before you read it aloud or post it.</p>
+    </div>
+  </section>
+
+  <!-- LIVE -->
+  <section class="panel" id="p-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+    <div class="card">
+      <h2>Service run sheet</h2>
+      <p class="note">Set your order of service, then start the clock. Keep this page open beside the live app so the team can see the time left.</p>
+      <div class="timer">
+        <span class="live-dot idle" id="t-state">Not started</span>
+        <div class="clock" id="t-clock">00:00</div>
+        <p id="t-name" style="font-weight:600"></p>
+        <div class="bar" aria-hidden="true"><i id="t-bar"></i></div>
+        <p class="note" id="t-total"></p>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="t-start" type="button">Start</button>
+        <button class="btn" id="t-next" type="button">Next segment</button>
+        <button class="btn" id="t-reset" type="button">Reset</button>
+      </div>
+      <div id="t-segs" style="display:flex;flex-direction:column;gap:4px"></div>
+      <div class="row">
+        <button class="small-btn" id="t-add" type="button">Add segment</button>
+        <button class="small-btn" id="t-default" type="button">Restore default order</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Before you press Live</h2>
+      <div id="c-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="row"><button class="small-btn" id="c-clear" type="button">Untick all</button></div>
+    </div>
+
+    <div class="card">
+      <h2>How to go live on each platform</h2>
+      <p class="note">Going live happens inside each platform's own app or studio, which is where your account and stream key stay safe. Tap a platform for the steps and a direct link.</p>
+      <details>
+        <summary>Facebook</summary>
+        <div class="body">
+          <ol>
+            <li>Open the Facebook app, go to your ministry Page and tap Live video. On a computer, use Meta Business Suite or Live Producer.</li>
+            <li>Write a clear title and description. Paste the post you wrote in the first tab.</li>
+            <li>Run a short test with the audience set to Only me before the real service.</li>
+            <li>Pin a comment with the prayer line and the giving details.</li>
+          </ol>
+          <div class="row"><a class="btn" href="https://www.facebook.com" target="_blank" rel="noopener">Open Facebook</a></div>
+        </div>
+      </details>
+      <details>
+        <summary>TikTok</summary>
+        <div class="body">
+          <ol>
+            <li>Open TikTok, tap the plus button and choose LIVE.</li>
+            <li>TikTok decides who can go live, based on age and follower count. If LIVE does not appear, check your account's eligibility inside the app.</li>
+            <li>Add a short title, such as "Deliverance and prayer service", and turn on comment moderation.</li>
+            <li>TikTok favours portrait video, so hold the phone upright.</li>
+          </ol>
+          <div class="row"><a class="btn" href="https://www.tiktok.com" target="_blank" rel="noopener">Open TikTok</a></div>
+        </div>
+      </details>
+      <details>
+        <summary>YouTube</summary>
+        <div class="body">
+          <ol>
+            <li>Open YouTube Studio, choose Create, then Go live.</li>
+            <li>The first time you enable live streaming, YouTube may take up to 24 hours to switch it on. Do this days before a big service.</li>
+            <li>Set the title, thumbnail and a scheduled start time so followers can set a reminder.</li>
+          </ol>
+          <div class="row"><a class="btn" href="https://studio.youtube.com" target="_blank" rel="noopener">Open YouTube Studio</a></div>
+        </div>
+      </details>
+      <details>
+        <summary>All platforms at the same time</summary>
+        <div class="body">
+          <ul>
+            <li>Use a computer with OBS Studio, plus a multistreaming service. Each platform gives you a stream URL and a stream key to paste in.</li>
+            <li>Treat each stream key like a password. Never post it or send it in a chat.</li>
+            <li>A phone alone goes live on one platform at a time. For several at once, use the computer route.</li>
+            <li>Use a wired connection or strong Wi-Fi. A steady upload speed of 5 Mbps or more suits 720p.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="panel" id="p-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+    <div class="card">
+      <h2>Add to the plan</h2>
+      <div class="grid2">
+        <label>Date <input id="pl-date" type="date"></label>
+        <label>Platform
+          <select id="pl-plat"></select>
+        </label>
+      </div>
+      <label>Title <input id="pl-title" type="text" placeholder="Example: Midweek prayer night invite"></label>
+      <label>Post text <textarea id="pl-text" placeholder="Paste a post from the Write tab, or type it here."></textarea></label>
+      <div class="row"><button class="btn primary" id="pl-add" type="button">Add to plan</button></div>
+    </div>
+    <div class="card">
+      <div class="post-head">
+        <h2>Content plan</h2>
+        <button class="small-btn" id="pl-export" type="button">Save as text file</button>
+      </div>
+      <p class="status" id="pl-status" role="status"></p>
+      <div id="pl-list"></div>
+    </div>
+  </section>
+
+  <p class="foot">Drafts, checklist ticks, run sheet and plan are kept in this browser on this device.</p>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var store={
+    get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+    set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  };
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  /* ---------- tabs ---------- */
+  var TABS=['write','bible','live','plan'];
+  function showTab(name){
+    TABS.forEach(function(t){
+      $('p-'+t).hidden=(t!==name);
+      $('tab-'+t).setAttribute('aria-selected',t===name?'true':'false');
+    });
+    store.set('ark.tab',name);
+  }
+  TABS.forEach(function(t){$('tab-'+t).addEventListener('click',function(){showTab(t)})});
+  var startTab=store.get('ark.tab','write'); showTab(TABS.indexOf(startTab)>-1?startTab:'write');
+
+  /* ---------- platforms ---------- */
+  var PL=[
+    {id:'facebook',name:'Facebook',limit:5000,url:'https://www.facebook.com',style:'Warm, 2 to 4 short paragraphs, ends with a question that invites comments, 2 hashtags.'},
+    {id:'tiktok',name:'TikTok',limit:2200,url:'https://www.tiktok.com',style:'A first line that grabs attention in under 150 characters, then 3 to 5 hashtags.'},
+    {id:'instagram',name:'Instagram',limit:2200,url:'https://www.instagram.com',style:'Short caption with line breaks, a call to share with a friend, 5 to 8 hashtags.'},
+    {id:'youtube',name:'YouTube',limit:5000,url:'https://studio.youtube.com',style:'First line is a video title under 90 characters, then a blank line, then a description of 2 to 3 sentences, then 3 hashtags.'},
+    {id:'x',name:'X',limit:280,url:'https://x.com/compose/post',style:'Under 270 characters in total including the single hashtag.'},
+    {id:'whatsapp',name:'WhatsApp status',limit:700,url:'https://web.whatsapp.com',style:'Personal and brief, like a message to church members, no hashtags, under 600 characters.'}
+  ];
+  var TYPES={scripture:'Word for today',prayer:'Prayer points',invite:'Service invitation',live:'Going live now',testimony:'Testimony call',sermon:'Sermon clip caption',custom:'Own message'};
+
+  var selected=store.get('ark.plats',['facebook','tiktok','instagram']);
+  var chipBox=$('w-plats');
+  PL.forEach(function(p){
+    var l=document.createElement('label'); l.className='chip';
+    l.innerHTML='<input type="checkbox" id="plat-'+p.id+'" value="'+p.id+'"'+(selected.indexOf(p.id)>-1?' checked':'')+'> '+esc(p.name);
+    chipBox.appendChild(l);
+  });
+  chipBox.addEventListener('change',function(){
+    selected=PL.filter(function(p){return $('plat-'+p.id).checked}).map(function(p){return p.id});
+    store.set('ark.plats',selected);
+  });
+  PL.forEach(function(p){var o=document.createElement('option');o.value=p.id;o.textContent=p.name;$('pl-plat').appendChild(o)});
+
+  /* ---------- drafts ---------- */
+  function fields(){return{type:$('w-type').value,tone:$('w-tone').value,topic:$('w-topic').value.trim(),ref:$('w-ref').value.trim(),when:$('w-when').value.trim()}}
+  ['w-type','w-tone','w-topic','w-ref','w-when'].forEach(function(id){
+    var saved=store.get('ark.f.'+id,null); if(saved!==null)$(id).value=saved;
+    $(id).addEventListener('input',function(){store.set('ark.f.'+id,$(id).value)});
+  });
+
+  function template(pid,f){
+    var topic=f.topic||'God is faithful and His mercy is new every morning.';
+    var ref=f.ref?' ('+f.ref+')':'';
+    var B={
+      scripture:'Word for today'+ref+'\n\n'+topic+'\n\nRead it slowly and let it settle in your heart.',
+      prayer:'Prayer points for today\n\n1. Thank God for His faithfulness.\n2. '+topic+'\n3. Ask the Lord for freedom, peace and a renewed mind.\n\nPray these aloud and write your amen below.',
+      invite:'You are invited to Ark of God Deliverance Ministry.\n\n'+topic+(f.when?'\n\nWhen and where: '+f.when:'')+'\n\nCome expectant and bring someone with you.',
+      live:'We are LIVE now at Ark of God Deliverance Ministry.\n\n'+topic+'\n\nJoin us, invite a friend and send your prayer requests in the comments.',
+      testimony:'Has God done something in your life? Tell us.\n\n'+topic+'\n\nYour testimony can strengthen someone who is still waiting on God. Share it in the comments.',
+      sermon:topic+ref+'\n\nA word from today\'s message at Ark of God Deliverance Ministry. Watch to the end and share it with someone who needs it.',
+      custom:topic
+    };
+    var body=B[f.type]||topic;
+    var tags='#ArkOfGodDeliverance #DeliveranceMinistry #Faith';
+    if(pid==='x'){var first=body.split('\n')[0].slice(0,235);return first+' #ArkOfGod'}
+    if(pid==='whatsapp')return body;
+    if(pid==='youtube')return (TYPES[f.type]||'Message')+' | Ark of God Deliverance Ministry\n\n'+body+'\n\n'+tags;
+    if(pid==='tiktok')return body.split('\n\n')[0]+'\n\n'+tags+' #Prayer #Jesus';
+    if(pid==='instagram')return body+'\n\n'+tags+' #Prayer #Jesus #ChristianLife #Worship';
+    return body+'\n\n'+tags;
+  }
+
+  var results=store.get('ark.results',{});
+  function setStatus(msg,err){var s=$('w-status');s.textContent=msg||'';s.className='status'+(err?' err':'')}
+
+  function renderResults(){
+    var box=$('w-out'); box.innerHTML='';
+    PL.forEach(function(p){
+      if(results[p.id]===undefined)return;
+      var c=document.createElement('div'); c.className='card';
+      c.innerHTML='<div class="post-head"><h3>'+esc(p.name)+'</h3><span class="count" id="cnt-'+p.id+'"></span></div>'+
+        '<textarea id="post-'+p.id+'" style="min-height:150px"></textarea>'+
+        '<div class="row"><button class="btn primary" type="button" data-copy="'+p.id+'">Copy post</button>'+
+        '<a class="btn" href="'+p.url+'" target="_blank" rel="noopener">Open '+esc(p.name)+'</a>'+
+        '<button class="small-btn" type="button" data-plan="'+p.id+'">Add to plan</button></div>'+
+        '<p class="status" id="msg-'+p.id+'" role="status"></p>';
+      box.appendChild(c);
+      var ta=$('post-'+p.id); ta.value=results[p.id];
+      var upd=function(){
+        var n=ta.value.length, el=$('cnt-'+p.id);
+        el.textContent=n+' / '+p.limit; el.className='count'+(n>p.limit?' over':'');
+        results[p.id]=ta.value; store.set('ark.results',results);
+      };
+      ta.addEventListener('input',upd); upd();
+    });
+  }
+  $('w-out').addEventListener('click',function(e){
+    var cp=e.target.getAttribute('data-copy'), pl=e.target.getAttribute('data-plan');
+    if(cp){
+      var ta=$('post-'+cp), msg=$('msg-'+cp);
+      var fallback=function(){ta.focus();ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(x){} msg.textContent=ok?'Copied.':'Text selected. Press copy on your keyboard.'};
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ta.value).then(function(){msg.textContent='Copied.'},fallback);
+      }else fallback();
+    }
+    if(pl){
+      $('pl-plat').value=pl; $('pl-text').value=$('post-'+pl).value;
+      $('pl-title').value=$('pl-title').value||(TYPES[$('w-type').value]||'Post');
+      showTab('plan'); $('pl-date').focus();
+    }
+  });
+
+  $('w-tpl').addEventListener('click',function(){
+    if(!selected.length){setStatus('Choose at least one platform.',true);return}
+    var f=fields(); results={};
+    selected.forEach(function(id){results[id]=template(id,f)});
+    store.set('ark.results',results); renderResults(); setStatus('Template ready. Edit any post before you copy it.');
+  });
+
+  var aiBusy=false;
+  $('w-ai').addEventListener('click',async function(){
+    if(aiBusy)return;
+    if(!selected.length){setStatus('Choose at least one platform.',true);return}
+    var f=fields();
+    if(!f.topic&&f.type!=='live'){setStatus('Add a message or topic first.',true);return}
+    var sample=null;
+    try{sample=window.claude&&window.claude.use?await window.claude.use('sample'):null}catch(e){}
+    if(!sample){setStatus('Claude is not available in this view. Use the quick template instead.',true);return}
+    aiBusy=true; $('w-ai').disabled=true; setStatus('Claude is writing your posts...');
+    var chosen=PL.filter(function(p){return selected.indexOf(p.id)>-1});
+    var prompt='You write social media posts for Ark of God Deliverance Ministry, a Christian church that holds deliverance and prayer services.\n'+
+      'Post type: '+TYPES[f.type]+'\nSubject or message: '+(f.topic||'We are going live for our service now')+'\n'+
+      'Scripture reference (use only if given): '+(f.ref||'none')+'\nDate, time and place (use only if given): '+(f.when||'none')+'\nTone: '+f.tone+'\n\n'+
+      'Rules: Stay faithful to the Bible and be respectful. Do not promise guaranteed healing, wealth or miracles. Do not pressure anyone to give money. Do not name or shame any person. Do not quote Bible verses word for word unless the text was given above; point to the reference instead. Use plain, warm language a wide audience understands.\n\n'+
+      'Write one post for each platform, following its style:\n'+chosen.map(function(p){return '- '+p.id+': '+p.style}).join('\n')+
+      '\n\nReply with only a JSON object whose keys are exactly: '+chosen.map(function(p){return p.id}).join(', ')+'. Each value is the post text as a string, with line breaks written as \\n.';
+    try{
+      var data=await sample.json(prompt,{cache:false});
+      results={};
+      chosen.forEach(function(p){ if(data&&typeof data[p.id]==='string') results[p.id]=data[p.id]; });
+      if(!Object.keys(results).length) throw {code:'invalid_json'};
+      store.set('ark.results',results); renderResults(); setStatus('Done. Read each post, edit it, then copy.');
+    }catch(e){
+      var m={not_granted:'Permission to use Claude was declined. The quick template still works.',rate_limited:'Too many requests just now. Wait a minute and try again.',invalid_json:'Claude\'s reply could not be read. Press Write with Claude again.'};
+      setStatus(m[e&&e.code]||'Claude could not write the posts. Try again, or use the quick template.',true);
+    }finally{aiBusy=false;$('w-ai').disabled=false}
+  });
+  renderResults();
+
+  /* ---------- bible ---------- */
+  var BOOKS=[['Genesis',50],['Exodus',40],['Leviticus',27],['Numbers',36],['Deuteronomy',34],['Joshua',24],['Judges',21],['Ruth',4],['1 Samuel',31],['2 Samuel',24],['1 Kings',22],['2 Kings',25],['1 Chronicles',29],['2 Chronicles',36],['Ezra',10],['Nehemiah',13],['Esther',10],['Job',42],['Psalms',150],['Proverbs',31],['Ecclesiastes',12],['Song of Solomon',8],['Isaiah',66],['Jeremiah',52],['Lamentations',5],['Ezekiel',48],['Daniel',12],['Hosea',14],['Joel',3],['Amos',9],['Obadiah',1],['Jonah',4],['Micah',7],['Nahum',3],['Habakkuk',3],['Zephaniah',3],['Haggai',2],['Zechariah',14],['Malachi',4],
+    ['Matthew',28],['Mark',16],['Luke',24],['John',21],['Acts',28],['Romans',16],['1 Corinthians',16],['2 Corinthians',13],['Galatians',6],['Ephesians',6],['Philippians',4],['Colossians',4],['1 Thessalonians',5],['2 Thessalonians',3],['1 Timothy',6],['2 Timothy',4],['Titus',3],['Philemon',1],['Hebrews',13],['James',5],['1 Peter',5],['2 Peter',3],['1 John',5],['2 John',1],['3 John',1],['Jude',1],['Revelation',22]];
+  var bBook=$('b-book'), bChap=$('b-chap'), bVerses=$('b-verses');
+  var gOT=document.createElement('optgroup'); gOT.label='Old Testament';
+  var gNT=document.createElement('optgroup'); gNT.label='New Testament';
+  BOOKS.forEach(function(b,i){var o=document.createElement('option');o.value=i;o.textContent=b[0];(i<39?gOT:gNT).appendChild(o)});
+  bBook.appendChild(gOT); bBook.appendChild(gNT);
+  function fillChapters(keep){
+    var n=BOOKS[+bBook.value][1]; bChap.innerHTML='';
+    for(var c=1;c<=n;c++){var o=document.createElement('option');o.value=c;o.textContent=c;bChap.appendChild(o)}
+    bChap.value=String(Math.min(keep||1,n));
+  }
+  function cleanVerses(){return bVerses.value.replace(/[–—]/g,'-').replace(/[^0-9,\-]/g,'')}
+  function refText(){var v=cleanVerses();return BOOKS[+bBook.value][0]+' '+bChap.value+(v?':'+v:'')}
+  function syncBible(){
+    $('b-open').href='https://www.biblegateway.com/passage/?search='+encodeURIComponent(refText())+'&version='+$('b-ver').value;
+    store.set('ark.bible',{b:+bBook.value,c:+bChap.value,v:bVerses.value,ver:$('b-ver').value});
+  }
+  var bSaved=store.get('ark.bible',{b:42,c:3,v:'',ver:'KJV'});
+  bBook.value=String(bSaved.b>=0&&bSaved.b<66?bSaved.b:42); fillChapters(bSaved.c); bVerses.value=bSaved.v||''; $('b-ver').value=bSaved.ver||'KJV'; syncBible();
+  bBook.addEventListener('change',function(){fillChapters(1);syncBible()});
+  bChap.addEventListener('change',syncBible);
+  bVerses.addEventListener('input',syncBible);
+  $('b-ver').addEventListener('change',syncBible);
+
+  var QUICK=[['Psalm 91','Psalms',91,''],['Psalm 23','Psalms',23,''],['Mark 16:15-18','Mark',16,'15-18'],['Luke 10:17-20','Luke',10,'17-20'],['Isaiah 61:1-3','Isaiah',61,'1-3'],['John 8:31-36','John',8,'31-36'],['Ephesians 6:10-18','Ephesians',6,'10-18'],['James 4:7-10','James',4,'7-10'],['Colossians 1:12-14','Colossians',1,'12-14'],['Romans 8:31-39','Romans',8,'31-39']];
+  QUICK.forEach(function(q){
+    var b=document.createElement('button'); b.type='button'; b.className='small-btn'; b.textContent=q[0];
+    b.addEventListener('click',function(){
+      var idx=BOOKS.findIndex(function(x){return x[0]===q[1]});
+      bBook.value=String(idx); fillChapters(q[2]); bVerses.value=q[3]; syncBible();
+      $('b-read').click();
+    });
+    $('b-quick').appendChild(b);
+  });
+
+  function bStatus(m,err){var s=$('b-status');s.textContent=m||'';s.className='status'+(err?' err':'')}
+  var bBusy=false;
+  $('b-read').addEventListener('click',async function(){
+    if(bBusy)return;
+    var sample=null;
+    try{sample=window.claude&&window.claude.use?await window.claude.use('sample'):null}catch(e){}
+    if(!sample){bStatus('Reading here is not available in this view. Use Open full chapter online.',true);return}
+    var ref=refText(); bBusy=true; $('b-read').disabled=true; bStatus('');
+    $('b-card').hidden=false; $('b-ref').textContent=ref; $('b-text').textContent='Opening '+ref+'...';
+    var prompt='Write out the text of '+ref+' in the King James Version of the Bible, which is in the public domain.\n'+
+      'Use the exact King James wording. Start each verse on its own line with the verse number, like "1 In the beginning...".\n'+
+      'Give only the scripture text, with no commentary, headings or introduction.\n'+
+      'If the passage is longer than 40 verses, write only the first 40 verses and end with one line saying which verse you stopped at.\n'+
+      'If you are not certain of the exact wording of a verse, add [check wording] after that verse.';
+    try{
+      await sample(prompt,{onText:function(u){$('b-text').textContent=u.text}});
+    }catch(e){
+      if(e&&e.text){$('b-text').textContent=e.text}else{$('b-card').hidden=true}
+      var m={not_granted:'Permission to use Claude was declined. Use Open full chapter online instead.',rate_limited:'Too many requests just now. Wait a minute and try again.'};
+      bStatus(m[e&&e.code]||'The passage could not be loaded. Try again, or open it online.',true);
+    }finally{bBusy=false;$('b-read').disabled=false}
+  });
+  $('b-copy').addEventListener('click',function(){
+    var t=$('b-text').textContent+'\n\n'+$('b-ref').textContent+' (KJV)';
+    var done=function(){bStatus('Copied.')}, fail=function(){bStatus('Select the passage and copy it with your keyboard.',true)};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fail);else fail();
+  });
+  $('b-use').addEventListener('click',function(){
+    $('w-ref').value=refText(); store.set('ark.f.w-ref',$('w-ref').value);
+    showTab('write'); $('w-topic').focus();
+  });
+
+  /* ---------- run sheet ---------- */
+  var DEF_SEGS=[
+    {n:'Welcome and opening prayer',m:5},{n:'Praise and worship',m:20},{n:'Testimonies',m:10},
+    {n:'The Word',m:35},{n:'Deliverance prayer',m:25},{n:'Announcements and offering',m:10},{n:'Closing blessing',m:5}
+  ];
+  var segs=store.get('ark.segs',null)||DEF_SEGS.map(function(s){return {n:s.n,m:s.m}});
+  var cur=0, endAt=0, running=false, remainOnPause=0, tick=null, elapsedBefore=0, runStart=0, wake=null;
+
+  function fmt(sec){var m=Math.floor(sec/60),s=sec%60;return (m<10?'0':'')+m+':'+(s<10?'0':'')+s}
+  function totalMin(){return segs.reduce(function(a,s){return a+(+s.m||0)},0)}
+  function renderSegs(){
+    var box=$('t-segs'); box.innerHTML='';
+    segs.forEach(function(s,i){
+      var d=document.createElement('div'); d.className='seg'+(i===cur&&(running||remainOnPause)?' now':'')+(i<cur?' done':'');
+      d.innerHTML='<input type="text" id="sg-n-'+i+'" value="'+esc(s.n)+'" aria-label="Segment name">'+
+        '<input type="number" id="sg-m-'+i+'" min="1" max="240" value="'+s.m+'" aria-label="Minutes">'+
+        '<button type="button" data-del="'+i+'" aria-label="Remove segment">×</button>';
+      box.appendChild(d);
+    });
+    $('t-total').textContent='Planned length: '+totalMin()+' minutes';
+  }
+  $('t-segs').addEventListener('input',function(e){
+    var id=e.target.id||'';
+    if(id.indexOf('sg-n-')===0)segs[+id.slice(5)].n=e.target.value;
+    if(id.indexOf('sg-m-')===0)segs[+id.slice(5)].m=Math.max(1,+e.target.value||1);
+    store.set('ark.segs',segs); $('t-total').textContent='Planned length: '+totalMin()+' minutes';
+  });
+  $('t-segs').addEventListener('click',function(e){
+    var d=e.target.getAttribute('data-del'); if(d===null)return;
+    if(segs.length<=1)return; segs.splice(+d,1); if(cur>=segs.length)cur=segs.length-1;
+    store.set('ark.segs',segs); renderSegs(); paint();
+  });
+  $('t-add').addEventListener('click',function(){segs.push({n:'New segment',m:5});store.set('ark.segs',segs);renderSegs()});
+  $('t-default').addEventListener('click',function(){segs=DEF_SEGS.map(function(s){return {n:s.n,m:s.m}});store.set('ark.segs',segs);resetTimer()});
+
+  function remaining(){return running?Math.max(0,Math.round((endAt-Date.now())/1000)):remainOnPause}
+  function paint(){
+    var r=remaining(), tot=(+segs[cur].m||1)*60;
+    var started=running||remainOnPause>0||cur>0;
+    $('t-clock').textContent=started?fmt(r):fmt(tot);
+    $('t-name').textContent=segs[cur].n;
+    $('t-bar').style.width=started?Math.min(100,100-(r/tot*100))+'%':'0%';
+    var st=$('t-state');
+    if(running){st.className='live-dot';st.textContent='Running'}
+    else if(started){st.className='live-dot idle';st.textContent='Paused'}
+    else{st.className='live-dot idle';st.textContent='Not started'}
+    $('t-start').textContent=running?'Pause':(started?'Resume':'Start');
+  }
+  function loadSeg(i){cur=i;remainOnPause=(+segs[i].m||1)*60;endAt=Date.now()+remainOnPause*1000;renderSegs()}
+  async function keepAwake(){try{if(navigator.wakeLock){wake=await navigator.wakeLock.request('screen')}}catch(e){}}
+  function release(){try{if(wake){wake.release();wake=null}}catch(e){}}
+  function loop(){
+    if(!running)return;
+    if(remaining()<=0){
+      if(cur<segs.length-1){loadSeg(cur+1);endAt=Date.now()+remainOnPause*1000}
+      else{running=false;remainOnPause=0;clearInterval(tick);release();$('t-state').textContent='Finished'}
+    }
+    paint();
+  }
+  $('t-start').addEventListener('click',function(){
+    if(running){remainOnPause=remaining();running=false;clearInterval(tick);release();paint();return}
+    if(!remainOnPause){remainOnPause=(+segs[cur].m||1)*60}
+    endAt=Date.now()+remainOnPause*1000; running=true; keepAwake();
+    clearInterval(tick); tick=setInterval(loop,500); renderSegs(); paint();
+  });
+  $('t-next').addEventListener('click',function(){
+    if(cur>=segs.length-1)return;
+    var was=running; loadSeg(cur+1); running=was;
+    if(was){endAt=Date.now()+remainOnPause*1000}
+    paint();
+  });
+  function resetTimer(){running=false;clearInterval(tick);release();cur=0;remainOnPause=0;renderSegs();paint()}
+  $('t-reset').addEventListener('click',resetTimer);
+  renderSegs(); paint();
+
+  /* ---------- checklist ---------- */
+  var CHECKS=[
+    'Phone or camera charged, and plugged in for the whole service',
+    'Wi-Fi tested, with mobile data ready as a backup',
+    'Microphone tested. Clear sound matters more than a sharp picture',
+    'Camera steady on a tripod, with light on faces and not behind them',
+    'Title, description and scripture ready to paste',
+    'A team member ready to welcome people and watch the comments',
+    'Prayer line or WhatsApp number ready to show on screen',
+    'Notifications switched off on the streaming phone',
+    'Test stream done with the audience set to Only me'
+  ];
+  var ticks=store.get('ark.checks',{});
+  var cl=$('c-list');
+  CHECKS.forEach(function(t,i){
+    var l=document.createElement('label'); l.className='check';
+    l.innerHTML='<input type="checkbox" id="ck-'+i+'"'+(ticks[i]?' checked':'')+'><span>'+esc(t)+'</span>';
+    cl.appendChild(l);
+  });
+  cl.addEventListener('change',function(e){var i=(e.target.id||'').replace('ck-','');ticks[i]=e.target.checked;store.set('ark.checks',ticks)});
+  $('c-clear').addEventListener('click',function(){ticks={};store.set('ark.checks',ticks);CHECKS.forEach(function(_,i){$('ck-'+i).checked=false})});
+
+  /* ---------- plan ---------- */
+  var PNAME={};PL.forEach(function(p){PNAME[p.id]=p.name});
+  var plan=store.get('ark.plan',null);
+  if(!plan){
+    plan=[
+      {id:'e1',date:'2026-11-11',plat:'facebook',title:'Midweek prayer night invite',text:'Join us this Wednesday for a night of prayer and worship. Bring someone with you.',ex:true},
+      {id:'e2',date:'2026-11-13',plat:'tiktok',title:'Word for the week clip',text:'One truth to hold on to this weekend. Watch to the end.',ex:true},
+      {id:'e3',date:'2026-11-15',plat:'youtube',title:'Sunday service live',text:'Sunday service live. Set a reminder so you do not miss it.',ex:true}
+    ];
+    store.set('ark.plan',plan);
+  }
+  function renderPlan(){
+    plan.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0});
+    var box=$('pl-list'); box.innerHTML='';
+    if(!plan.length){box.innerHTML='<p class="note">Nothing planned yet. Add the first post above.</p>';return}
+    plan.forEach(function(it){
+      var d=it.date?new Date(it.date+'T00:00:00'):null;
+      var ds=d&&!isNaN(d)?d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}):'No date';
+      var r=document.createElement('div'); r.className='plan-item';
+      r.innerHTML='<div class="date">'+esc(ds)+'</div><div style="min-width:0"><div class="row" style="gap:8px"><strong>'+esc(it.title||'Untitled')+'</strong><span class="badge">'+esc(PNAME[it.plat]||it.plat)+'</span>'+(it.ex?'<span class="badge ex">Example</span>':'')+'</div><div class="plan-text">'+esc(it.text||'')+'</div></div>'+
+        '<button class="small-btn" type="button" data-rm="'+it.id+'">Remove</button>';
+      box.appendChild(r);
+    });
+  }
+  $('pl-list').addEventListener('click',function(e){
+    var id=e.target.getAttribute('data-rm'); if(!id)return;
+    plan=plan.filter(function(x){return x.id!==id}); store.set('ark.plan',plan); renderPlan();
+  });
+  $('pl-add').addEventListener('click',function(){
+    var title=$('pl-title').value.trim(), text=$('pl-text').value.trim();
+    var st=$('pl-status');
+    if(!title&&!text){st.className='status err';st.textContent='Add a title or some post text.';return}
+    plan.push({id:'p'+Date.now(),date:$('pl-date').value,plat:$('pl-plat').value,title:title,text:text});
+    store.set('ark.plan',plan); $('pl-title').value='';$('pl-text').value='';
+    st.className='status';st.textContent='Added to the plan.'; renderPlan();
+  });
+  $('pl-export').addEventListener('click',async function(){
+    var st=$('pl-status'), dl=null;
+    try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){}
+    if(!dl){st.className='status err';st.textContent='Saving files is not available in this view. Copy the posts one by one instead.';return}
+    var txt='Ark of God Deliverance Ministry - content plan\n\n'+plan.map(function(it){
+      return (it.date||'No date')+' | '+(PNAME[it.plat]||it.plat)+' | '+(it.title||'Untitled')+'\n'+(it.text||'')+'\n';
+    }).join('\n');
+    try{await dl.save({filename:'ark-content-plan.txt',data:txt});st.className='status';st.textContent='Saved.'}
+    catch(e){st.className='status err';st.textContent=(e&&e.code==='declined')?'Save cancelled.':'The file could not be saved here.'}
+  });
+  renderPlan();
+})();
+</script>
+
+</body></html>
